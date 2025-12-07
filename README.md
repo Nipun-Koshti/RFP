@@ -69,22 +69,27 @@ assignment/
 │
 ├── Backend/
 │   ├── Controller/
-│   │   ├── email.controller.js          # Send RFQ emails
-│   │   ├── emailReply.controller.js     # Manual email processing
+│   │   ├── ai.controller.js             # AI/Groq features (create RFP from text)
+│   │   ├── email.controller.js          # Send RFQ emails to vendors
 │   │   ├── rfp.controller.js            # RFP CRUD operations
-│   │   ├── vendor.controller.js         # Vendor management
-│   │   ├── quote.controller.js          # Quotation management
-│   │   └── ai.controller.js             # AI/Groq features
+│   │   ├── vendor.controller.js         # Vendor management (CRUD)
+│   │   └── quote.controller.js          # Quotation management (CRUD)
 │   │
 │   ├── services/
 │   │   ├── LLM/
-│   │   │   └── createRfp.js             # Groq: Convert free text to RFP JSON
+│   │   │   ├── createRfp.js             # Groq: Convert free text to RFP JSON
+│   │   │   └── emailData.js             # Email data processing helpers
+│   │   │
 │   │   ├── validations/
 │   │   │   ├── rfp.validation.js        # Zod schema for RFP
-│   │   │   └── quote.validation.js      # Zod schema for quotations
-│   │   ├── emailReplyExtractor.js       # Extract & parse email replies
+│   │   │   ├── quote.validation.js      # Zod schema for quotations
+│   │   │   └── vendor.validation.js     # Zod schema for vendor
+│   │   │
+│   │   ├── cron/                        # Scheduled jobs
+│   │   ├── emailExtractor.js            # Extract email data & parse replies
 │   │   ├── emailFinder.js               # Extract vendor emails
 │   │   ├── emailTemplate.js             # Generate RFQ email HTML
+│   │   ├── emailResponse.js             # Email response handling
 │   │   ├── asyncHandler.service.js      # Async error wrapper
 │   │   ├── api.error.js                 # Custom error class
 │   │   └── response.js                  # Standard response format
@@ -92,7 +97,8 @@ assignment/
 │   ├── model/
 │   │   ├── rfp.model.js                 # RFP schema
 │   │   ├── vendor.model.js              # Vendor schema
-│   │   └── quotation.model.js           # Quotation schema
+│   │   ├── quotation.model.js           # Quotation schema
+│   │   └── email.model.js               # Email tracking model
 │   │
 │   ├── routes/
 │   │   ├── rfp.routes.js                # /api/v1/rfp endpoints
@@ -104,53 +110,67 @@ assignment/
 │   ├── db/
 │   │   └── connectDb.js                 # MongoDB connection
 │   │
+│   ├── middleware/                      # Express middleware
 │   ├── index.js                         # Express app setup & routes
 │   ├── server.js                        # Bootstrap with dotenv
-│   ├── .env                             # Environment variables
+│   ├── .env                             # Environment variables (local)
+│   ├── example.env                      # Environment variables template
 │   ├── package.json                     # Backend dependencies
-│   └── README.md                        # Backend-specific docs
+│   ├── .gitignore                       # Git ignore rules
+│   └── public/                          # Static files
 │
 ├── Frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── Navbar.jsx               # Navigation
+│   │   │   └── Navbar.jsx               # Navigation component
 │   │   │
 │   │   ├── Pages/
 │   │   │   ├── Home.jsx                 # Landing page
-│   │   │   ├── Rfp.jsx                  # View all RFPs
+│   │   │   ├── Rfp.jsx                  # View all RFPs table
 │   │   │   ├── RfpView.jsx              # View single RFP details
+│   │   │   ├── RfpCreate.jsx            # Create/edit RFP form
 │   │   │   ├── Vendor.jsx               # View all vendors
 │   │   │   ├── VendorView.jsx           # View vendor details
-│   │   │   ├── RfpCreate.jsx            # Create new RFP
-│   │   │   └── NotFound.jsx             # 404 page
+│   │   │   ├── VendorCreate.jsx         # Create/edit vendor form
+│   │   │   ├── Quote.jsx                # View all quotations
+│   │   │   ├── NotFound.jsx             # 404 error page
+│   │   │   └── index.js                 # Page exports
 │   │   │
 │   │   ├── Outlets/
 │   │   │   └── MainLayout.jsx           # Main layout wrapper
 │   │   │
 │   │   ├── Routes/
-│   │   │   └── routes.jsx               # React Router config
+│   │   │   └── routes.jsx               # React Router configuration
 │   │   │
 │   │   ├── services/
 │   │   │   ├── Api/
-│   │   │   │   ├── axios.api.js         # Axios instance
+│   │   │   │   ├── axios.api.js         # Axios instance with base config
 │   │   │   │   ├── rfp.api.js           # RFP API calls
 │   │   │   │   ├── vendor.api.js        # Vendor API calls
-│   │   │   │   └── proposal.js          # Mock proposal data
+│   │   │   │   ├── quote.api.js         # Quotation API calls
+│   │   │   │   ├── email.api.js         # Email API calls
+│   │   │   │   └── ai.api.js            # AI API calls
 │   │   │   │
 │   │   │   └── Validations/
-│   │   │       ├── rfp.validation.js    # Zod RFP schema
-│   │   │       └── quote.validation.js  # Zod quotation schema
+│   │   │       ├── rfp.validation.js    # Zod RFP schema (client-side)
+│   │   │       └── quote.validation.js  # Zod quotation schema (client-side)
 │   │   │
+│   │   ├── assets/                      # Images, fonts, static assets
+│   │   ├── store/                       # State management (if using)
 │   │   ├── App.jsx                      # Root component
-│   │   ├── main.jsx                     # Entry point
+│   │   ├── main.jsx                     # React entry point
+│   │   ├── App.css                      # App styles
 │   │   └── index.css                    # Global styles
 │   │
-│   ├── vite.config.js                   # Vite configuration
+│   ├── public/                          # Static public assets
+│   ├── vite.config.js                   # Vite build configuration
 │   ├── eslint.config.js                 # ESLint rules
 │   ├── package.json                     # Frontend dependencies
-│   └── index.html                       # HTML template
+│   ├── index.html                       # HTML template
+│   ├── .gitignore                       # Git ignore rules
+│   └── README.md                        # Frontend-specific docs
 │
-└── README.md                            # This file
+└── README.md                            # This file (root documentation)
 ```
 
 ---
