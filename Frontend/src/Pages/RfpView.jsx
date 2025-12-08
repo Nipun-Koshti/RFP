@@ -14,10 +14,15 @@ import {
   Edit,
   Save,
   X,
+  Star,
+  Sparkle,
 } from "lucide-react";
 
 import { getOneRfp, updateRfp } from "../services/Api/rfp.api";
 import { getNameVendor } from "../services/Api/vendor.api";
+import { getOneQuote } from "../services/Api/quote.api";
+import { htmlResponse } from "../services/analysisRespose";
+import { getQuoteAnalysis } from "../services/Api/ai.api";
 
 const useRfpDetails = (id) => {
   const [rfp, setRfp] = useState(null);
@@ -154,6 +159,7 @@ const ProposalDetail = () => {
         console.error("Vendor fetch failed:", error);
       }
     };
+
     fetchVendors();
   }, []);
 
@@ -241,6 +247,29 @@ const ProposalDetail = () => {
     setEditData({ ...editData, vendors: updated });
   };
 
+  const [ai, setAiAnalysis] = useState(true);
+  const [analysis, setAnalysis] = useState({});
+
+  const generateAiAnalysis = async () => {
+    try {
+      const vendors = rfp.vendors;
+
+      const quotationIds = vendors
+        .map((v) => v.quotation)
+        .filter((id) => id != null);
+
+      console.log("----------quotedata---------", quotationIds);
+
+      const data = await getQuoteAnalysis(rfp);
+
+      setAnalysis(data);
+    } catch (err) {
+      console.error("Error fetching quotations:", err);
+    }
+
+    setAiAnalysis(false);
+  };
+
   if (isLoading || !editData) {
     return (
       <div className="p-16 text-center text-xl text-gray-500">
@@ -248,8 +277,6 @@ const ProposalDetail = () => {
       </div>
     );
   }
-
-  
 
   return (
     <div className="bg-gray-50 p-4 sm:p-8 md:p-12 lg:p-16">
@@ -319,8 +346,6 @@ const ProposalDetail = () => {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-
             <div className="bg-indigo-50 p-4 rounded-xl border">
               <p className="text-sm text-indigo-700">Budget Cap</p>
               {!editMode ? (
@@ -419,6 +444,40 @@ const ProposalDetail = () => {
             </div>
           </div>
         )}
+
+        <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
+          <div className="flex justify-center items-center p-6">
+            {ai ? (
+              <button
+                className="bg-blue-500 shadow-2xl rounded-md p-2 text-white font-bold hover:bg-blue-400 hover:scale-[1.1]
+                  trnasition-all duration-100 group"
+                onClick={generateAiAnalysis}
+              >
+                <Sparkle className="inline  group-hover:group-hover:translate-y-[-5px] transition-all duration-100" />{" "}
+                Ai Analysis
+              </button>
+            ) : (
+              <div>
+                <h3 className="font-semibold text-xl text-center mb-6 border-b-1 border-blue-400">
+                  AI Suggestion
+                </h3>
+                <div>
+                  <h4>Best vendor - {analysis.recommendation.bestVendor}</h4>
+                  <p>{analysis.recommendation.reason}</p>
+                </div>
+                <br />
+                <p>Top contendors</p>
+                <ul>
+                  <ul>
+                    {analysis.vendorlist.map((v) => {
+                      return <li key={v}>{v}</li>;
+                    })}
+                  </ul>
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* BILL OF MATERIALS */}
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden">

@@ -12,4 +12,18 @@ const getJsonFromFreeText = async(payload)=>{
     return data.data.rfp;
 }
 
-export {getJsonFromFreeText}
+
+const getQuoteAnalysis = async(payload)=>{
+    let data;
+    try {
+        data = await api.post("ai/analysis-quote",payload)
+        
+    } catch (error) {
+        console.error(error)
+        alert("Error occured during the Ai analysis")
+    }
+    return JSON.parse(data.data.data);
+}
+
+
+export {getJsonFromFreeText, getQuoteAnalysis}

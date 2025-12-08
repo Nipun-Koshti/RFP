@@ -1,6 +1,9 @@
+import analysisGneratorFronQuotation from "../services/LLM/analysisLlm.js";
 import generateRfpFromTextGroq from "../services/LLM/createRfp.js"
+import asyncHandeler from "../services/asyncHandler.service.js"
+import { ApiResponse } from "../services/response.js";
 
-export const createRfpControllerGroq = async (req, res) => {
+const createRfpControllerGroq = async (req, res) => {
 
     const text = Object.keys(req.body)[0];
 console.log("Extracted text:", text);
@@ -32,4 +35,15 @@ console.log("Extracted text:", text);
   });
 };
 
+const qutationAnalysisController = asyncHandeler(async(req,res)=>{
+  const quotations = req.body
 
+
+  const data = await analysisGneratorFronQuotation(quotations)
+
+  console.log("data-------------------------------------------analysis--------------------------",JSON.parse(data))
+
+  res.status(200).json(new ApiResponse(200,data,"Analysis retrieved sucessfully"))
+})
+
+export {createRfpControllerGroq, qutationAnalysisController}

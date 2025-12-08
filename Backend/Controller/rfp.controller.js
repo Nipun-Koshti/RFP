@@ -81,7 +81,7 @@ const getRfpById = asyncHandler(async (req, res) => {
 
   const rfp = await RfpModel.findById(id)
     .populate("vendors.vendor", "vendorName email phone")
-    .populate("vendors.quotation", "amount createdAt");
+    .populate("vendors.quotation");
 
   if (!rfp) {
     throw new ApiError(404, "RFP not found");
@@ -95,7 +95,7 @@ const getRfpById = asyncHandler(async (req, res) => {
 
 const getAllRfps = asyncHandler(async (req, res) => {
   const rfps = await RfpModel.find({})
-    .select("subject budget status createdAt billingAddress");
+    .select("subject budget status createdAt billingAddress").sort({createdAt:-1});
 
   return res.status(200).json(
     new ApiResponse(200, rfps, "All RFPs retrieved successfully!")
