@@ -31,18 +31,7 @@ const Rfp = () => {
    
   };
 
-  
-  const filteredRfps = useMemo(() => {
-    if (!searchTerm.trim()) return rfps;
 
-    const lower = searchTerm.toLowerCase();
-    return rfps.filter((rfp) => {
-      const subjectMatch = rfp.subject?.toLowerCase().includes(lower);
-      const idMatch = rfp._id?.toLowerCase().includes(lower);
-      const budgetMatch = String(rfp.budget).includes(lower);
-      return subjectMatch || idMatch || budgetMatch;
-    });
-  }, [searchTerm, rfps]);
 
   const tableRowClass =
     "border-b border-gray-100 hover:bg-indigo-50/50 transition duration-300 ease-in-out cursor-pointer";
@@ -89,22 +78,10 @@ const Rfp = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>
 
-          <button
-            className="flex items-center gap-2 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition duration-150 shadow-sm"
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-            Filter
-          </button>
+          
         </div>
 
-        {isFilterOpen && (
-          <div className="p-4 bg-white border border-gray-200 rounded-xl shadow-lg animate-slide-down transition-all duration-300">
-            <p className="text-sm text-gray-600">
-              Status filters, Date range, Budget filters...
-            </p>
-          </div>
-        )}
+        
 
         {/* Table */}
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden animate-slide-up delay-600">

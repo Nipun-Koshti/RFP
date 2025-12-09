@@ -29,31 +29,6 @@ const Vendor = () => {
     fetchVendors();
   }, []);
 
-  // Filtering Logic
-  const filteredVendors = useMemo(() => {
-    let list = vendorList;
-
-    // Status filter (placeholders, since your real vendor model has no status)
-    if (statusFilter !== "All") {
-      list = list.filter((v) => v.status === statusFilter);
-    }
-
-    // Search filter
-    if (searchTerm) {
-      const lower = searchTerm.toLowerCase();
-      list = list.filter((v) => {
-        const matchesName = v.vendorName?.toLowerCase().includes(lower);
-        const matchesEmail = v.email?.toLowerCase().includes(lower);
-        const matchesCity = v.address?.city?.toLowerCase().includes(lower);
-        const matchesState = v.address?.state?.toLowerCase().includes(lower);
-        const matchesStreet = v.address?.street?.toLowerCase().includes(lower);
-        
-        return matchesName || matchesEmail || matchesCity || matchesState || matchesStreet;
-      });
-    }
-
-    return list;
-  }, [searchTerm, statusFilter, vendorList]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8 md:p-12 lg:p-16">
@@ -80,7 +55,7 @@ const Vendor = () => {
           </button>
         </div>
 
-        {/* Search + Filter */}
+        {/* Search*/}
         <div className="flex gap-4">
           <div className="relative flex-grow">
             <input
@@ -93,34 +68,9 @@ const Vendor = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>
 
-          <button
-            className="flex items-center gap-2 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition duration-150 shadow-sm"
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-          >
-            <SlidersHorizontal className="w-5 h-5" />
-            Filter
-          </button>
+          
         </div>
 
-        {/* Filter Dropdown */}
-        {isFilterOpen && (
-          <div className="p-4 bg-white border border-gray-200 rounded-xl shadow-lg flex gap-4 items-center">
-            <label className="text-gray-700 font-medium">Status:</label>
-            {["All", "Active", "Pending", "Inactive"].map((status) => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition duration-200 ${
-                  statusFilter === status
-                    ? "bg-teal-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-        )}
 
         {/* Vendor Table */}
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
