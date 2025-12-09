@@ -1,3 +1,110 @@
+# RFQ / Quotation Service (Fullstack)
+
+This repository contains a React + Vite frontend and a Node.js (Express) backend that together implement a Request-for-Quotation (RFP) workflow: create RFPs, send RFP emails to vendors, capture vendor replies and convert replies into quotations using a Groq-powered LLM helper.
+
+**Contents**
+- **Frontend**: `Frontend/` (React + Vite + Tailwind)
+- **Backend**: `Backend/` (Node.js, Express, Mongoose, Nodemailer, IMAP/mailparser, Groq SDK)
+
+**Quick Notes**
+- **Environment**: The backend reads environment variables via `dotenv`. A `server.js` bootstrap is used so env is loaded before imports.
+- **API prefix**: All backend API routes are mounted under `/api/v1/`.
+
+**Features**
+- Create / manage RFPs and Vendors.
+- Send RFP emails to vendor contacts and store sent message metadata for reply tracking.
+- Fetch vendor email replies (IMAP) or accept webhook payloads and parse replies into quotation objects.
+- Groq LLM helper to convert free text into structured RFP/quotation JSON.
+
+**Prerequisites**
+- Node.js (v16+ recommended)
+- npm
+- MongoDB instance (local or hosted)
+
+**Setup (Windows / cmd.exe)**
+- Open two terminals.
+- Backend:
+  - `cd Backend`
+  - `npm install`
+  - Create a `.env` file with required variables (see below).
+  - Start in dev: `npm run dev` (runs `nodemon server.js`).
+- Frontend:
+  - `cd Frontend`
+  - `npm install`
+  - Start: `npm run dev` (Vite dev server).
+
+**Important Environment Variables**
+- `MONGO_URI`: MongoDB connection string.
+- `PORT`: Backend listening port (optional; defaults to `8000`).
+- `CORS_ORIGIN`: CORS origin (can be `*` or specific origin). When using credentials, specify the frontend origin.
+- `EMAIL`: SMTP sender email (used by Nodemailer).
+- `PASS`: SMTP password or app password for the sender email.
+- `GROQ_API_KEY`: API key for Groq SDK (used by `services/LLM/createRfp.js`).
+
+**Backend Structure (important files)**
+- `index.js`: Express app bootstrap, CORS, body-parsing, route mounts.
+- `server.js`: (if present) bootstrapper to load env before app imports.
+- `routes/`: Express route definitions
+  - `rfp.routes.js` mounted at `/api/v1/rfp`
+  - `vendor.routes.js` mounted at `/api/v1/vendor`
+  - `quote.route.js` mounted at `/api/v1/quote`
+  - `ai.routes.js` mounted at `/api/v1/ai`
+  - `email.route.js` mounted at `/api/v1/email`
+- `Controller/`: request handlers for RFP, Vendor, Quote, AI, Email logic.
+- `services/`: utilities including `LLM/createRfp.js`, `emailExtractor.js`, `emailTemplate.js`, and validation schemas.
+
+**API Reference (concise)**
+Base URL: `http://localhost:<PORT>/api/v1` (default `PORT=8000`)
+
+- `POST /rfp/create` : Create an RFP.
+- `PUT /rfp/update/:id` : Update RFP by id.
+- `DELETE /rfp/delete/:id` : Delete RFP by id.
+- `GET /rfp/list` : List RFPs.
+- `GET /rfp/view/:id` : View single RFP.
+
+- `POST /vendor/register` : Register a new vendor.
+- `GET /vendor/list` : List vendors.
+- `GET /vendor/nameList` : List vendor names only.
+- `GET /vendor/view/:id` : Get vendor by id.
+- `PUT /vendor/update/:id` : Update vendor.
+- `DELETE /vendor/delete/:id` : Delete vendor.
+
+- `POST /quote/create` : Create a quotation (usually created from parsed email replies).
+- `PUT /quote/update/:id` : Update a quotation.
+- `DELETE /quote/delete/:id` : Delete a quotation.
+- `GET /quote/view/:id` : View a quotation by id.
+
+- `POST /ai/createRFP` : Accept free text and generate an RFP JSON via Groq LLM.
+- `POST /ai/process-emails` : Trigger processing of captured email replies (batch).
+- `POST /ai/process-single` : Process a single email-reply payload into a quotation.
+- `POST /ai/analysis-quote` : Run analysis on a quotation (LLM analysis endpoint).
+
+- `POST /email/outbound` : Send RFP emails to vendors. Body should include `_id` of RFP to send.
+- `GET /email/check` : Diagnostic endpoint that runs IMAP capture to fetch recent replies (returns parsed replies array).
+
+**Email Sending & Reply Capture**
+- Sending: `email.controller.js` uses `nodemailer` with `process.env.EMAIL` and `process.env.PASS` to send emails to vendor contact addresses and records metadata in `model/email.model.js` for reply-tracking.
+- Capturing replies: `services/emailExtractor.js` contains IMAP-based capture logic; `email.route.js` exposes `/check` for manual capture and `ai.routes.js` provides endpoints for processing captured replies into quotations.
+
+**Groq LLM usage**
+- `services/LLM/createRfp.js` provides a helper that lazily initializes a Groq client with `process.env.GROQ_API_KEY` and calls the model to convert free text to structured JSON.
+
+**Troubleshooting**
+- CORS + credentials: If frontend uses `axios` with `withCredentials: true`, set `CORS_ORIGIN` to the exact frontend origin and enable cookies/credentials on both client and server.
+- Email send failures: ensure `EMAIL` and `PASS` are correct and that the sender account allows SMTP (Gmail typically requires an App Password).
+- Groq API key undefined: ensure `.env` is loaded before importing modules that require the key. Use `server.js` bootstrap if provided.
+
+**Next steps / Enhancements**
+- Add webhook endpoint to receive email provider webhooks for real-time replies (e.g., SendGrid/Gmail push).
+- Add attachment parsing (PDF/XLSX) to extract quotation data automatically.
+- Improve LLM prompts and add safety/validation around generated JSON.
+
+If you want, I can:
+- Run a quick scan and regenerate this README with additional specifics (models, example payloads).
+- Add a `README` section with example API requests (Postman-ready JSON) or generate Postman collection.
+
+---
+Generated by GitHub Copilot (GPT-5 mini) — let me know if you want a more detailed API examples section.
 # RFP & Quotation Management System
 
 A full-stack web application for managing Request for Proposals (RFPs), vendor management, and automated quotation processing with AI-powered email parsing.

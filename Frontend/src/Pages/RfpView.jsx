@@ -167,6 +167,7 @@ const ProposalDetail = () => {
     if (rfp) {
       setEditData(JSON.parse(JSON.stringify(rfp)));
     }
+    console.log(rfp)
   }, [rfp]);
 
   const getStatusStyle = (status) => {
@@ -253,7 +254,7 @@ const ProposalDetail = () => {
   const generateAiAnalysis = async () => {
     try {
       const vendors = rfp.vendors;
-
+      
       const quotationIds = vendors
         .map((v) => v.quotation)
         .filter((id) => id != null);
@@ -553,7 +554,9 @@ const ProposalDetail = () => {
                   v.vendor?.vendorName ||
                   (v.vendor ? `ID: ${v.vendor._id}` : "Unknown Vendor");
                 const quotedAmount = v.quotation?.amount;
-                const isQuoted = !!quotedAmount;
+                console.log("login from the data youyuy-------------",quotedAmount)
+
+                const isQuoted = quotedAmount==0?true:(quotedAmount);
 
                 return (
                   <tr

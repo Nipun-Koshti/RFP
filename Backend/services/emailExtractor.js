@@ -20,15 +20,19 @@ export const captureReplies = async () => {
 
     await connection.openBox("INBOX");
 
-    // Search for unseen emails from the last 24 hours to catch all potential replies
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
+
     const imapDate = yesterday.toISOString().slice(0, 10).replace(/-/g, "-");
 
     const searchCriteria = ["UNSEEN", ["SINCE", imapDate]];
 
     const fetchOptions = {
-      bodies: ["HEADER.FIELDS (FROM TO SUBJECT DATE MESSAGE-ID IN-REPLY-TO REFERENCES)", "TEXT", ""],
+      bodies: [
+        "HEADER.FIELDS (FROM TO SUBJECT DATE MESSAGE-ID IN-REPLY-TO REFERENCES)",
+        "TEXT",
+        "",
+      ],
       struct: true,
     };
 
@@ -41,7 +45,13 @@ export const captureReplies = async () => {
 
     for (const message of messages) {
       try {
-        // Get the full email body
+        console.log(
+          "--------------------------------message start---------------------------"
+        );
+        console.log(message);
+        console.log(
+          "--------------------------------message end---------------------------"
+        );
         const all = message.parts.find((part) => part.which === "");
         const emailBuffer = all ? all.body : "";
 
@@ -57,17 +67,20 @@ export const captureReplies = async () => {
 
         // Extract Message-ID references for reply detection
         const inReplyTo = parsed.inReplyTo || parsed.headers.get("in-reply-to");
-        const references = parsed.references || parsed.headers.get("references");
-        
+        const references =
+          parsed.references || parsed.headers.get("references");
+
         // Build array of possible original message IDs
         let originalMessageIds = [];
-        
+
         if (inReplyTo) {
           // Handle both string and array formats
-          const inReplyToIds = Array.isArray(inReplyTo) ? inReplyTo : [inReplyTo];
+          const inReplyToIds = Array.isArray(inReplyTo)
+            ? inReplyTo
+            : [inReplyTo];
           originalMessageIds.push(...inReplyToIds);
         }
-        
+
         if (references) {
           // References can be a string with multiple IDs or an array
           if (typeof references === "string") {
@@ -79,11 +92,14 @@ export const captureReplies = async () => {
 
         // Clean up message IDs (remove angle brackets if present)
         originalMessageIds = originalMessageIds
-          .map(id => id.trim().replace(/^<|>$/g, ""))
-          .filter(id => id.length > 0);
+          .map((id) => id.trim().replace(/^<|>$/g, ""))
+          .filter((id) => id.length > 0);
 
         if (originalMessageIds.length === 0) {
-          console.log("Not a reply (missing In-Reply-To/References):", parsed.subject);
+          console.log(
+            "Not a reply (missing In-Reply-To/References):",
+            parsed.subject
+          );
           continue;
         }
 
@@ -97,10 +113,10 @@ export const captureReplies = async () => {
             $or: [
               { messageId: msgId },
               { messageId: `<${msgId}>` },
-              { messageId: msgId.replace(/^<|>$/g, "") }
-            ]
+              { messageId: msgId.replace(/^<|>$/g, "") },
+            ],
           });
-          
+
           if (meta) {
             console.log("Found match for Message-ID:", msgId);
             break;
@@ -108,13 +124,21 @@ export const captureReplies = async () => {
         }
 
         if (!meta) {
-          console.log("Reply does NOT match any stored email. Checked IDs:", originalMessageIds);
+          console.log(
+            "Reply does NOT match any stored email. Checked IDs:",
+            originalMessageIds
+          );
           continue;
         }
 
-        const fromEmail = parsed.from?.value?.[0]?.address || parsed.from?.text || "unknown";
+        const fromEmail =
+          parsed.from?.value?.[0]?.address || parsed.from?.text || "unknown";
 
-        // Construct reply object
+        console.log(
+          "in the reply generator --------------------------------------------------",
+          parsed.attachments
+        );
+
         replies.push({
           rfpId: meta.rfpId,
           vendorId: meta.vendorId,
@@ -124,9 +148,20 @@ export const captureReplies = async () => {
             text: parsed.text || "",
             html: parsed.html || "",
             receivedAt: emailDate,
+            attachments:
+              parsed.attachments?.map((att) => ({
+                filename: att.filename,
+                contentType: att.contentType,
+                size: att.size,
+                content: att.content,
+              })) || [],
           },
         });
 
+        console.log(
+          "Captured replies----------------------------------------------------------",
+          replies[0].email.attachments
+        );
         console.log("Reply captured:", {
           rfpId: meta.rfpId,
           vendorId: meta.vendorId,
