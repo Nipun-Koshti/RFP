@@ -47,7 +47,7 @@ app.use("/api/v1/email", emailRoutes)
 
 ///////Finally the last step
 //to fetch the response from the vendor
-// import "./services/cron/responseReader.cron.js"
+import "./services/cron/responseReader.cron.js"
 
 
 connectDb()

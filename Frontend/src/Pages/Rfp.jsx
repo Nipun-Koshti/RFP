@@ -8,7 +8,7 @@ const Rfp = () => {
 
   const [rfps, setRfps] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
 
 
   useEffect(() => {
@@ -64,30 +64,13 @@ const Rfp = () => {
 
          
         </div>
-
-        {/* Search */}
-        <div className="flex gap-4 animate-fade-in-down delay-500">
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              placeholder="Search by Subject, ID, or Budget..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 shadow-sm"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          </div>
-
-          
-        </div>
-
         
 
         {/* Table */}
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden animate-slide-up delay-600">
           <div className="p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Active RFPs ({filteredRfps.length})
+              Active RFPs ({rfps.length})
             </h2>
           </div>
 
@@ -105,8 +88,8 @@ const Rfp = () => {
               </thead>
 
               <tbody className="divide-y divide-gray-100">
-                {filteredRfps.length > 0 ? (
-                  filteredRfps.map((rfp) => (
+                {rfps.length > 0 ? (
+                  rfps.map((rfp) => (
                     <tr
                       key={rfp._id}
                       className={tableRowClass}
@@ -155,7 +138,7 @@ const Rfp = () => {
           </div>
 
           <div className="p-6 text-center text-sm text-gray-400 border-t border-gray-100">
-            Showing {filteredRfps.length} total RFPs.
+            Showing {rfps.length} total RFPs.
           </div>
         </div>
       </div>
@@ -164,3 +147,4 @@ const Rfp = () => {
 };
 
 export default Rfp;
+  

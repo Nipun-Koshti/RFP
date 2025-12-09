@@ -4,9 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getListVendor } from "../services/Api/vendor.api";
 
 const Vendor = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("All");
+  
   const [vendorList, setVendorList] = useState([]);
   const navigate = useNavigate();
 
@@ -55,28 +53,14 @@ const Vendor = () => {
           </button>
         </div>
 
-        {/* Search*/}
-        <div className="flex gap-4">
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              placeholder="Search by Name, Email, or Address..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-teal-500 focus:border-teal-500 transition duration-150 shadow-sm"
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          </div>
-
-          
-        </div>
+        
 
 
         {/* Vendor Table */}
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
           <div className="p-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              Vendor List ({filteredVendors.length})
+              Vendor List ({vendorList.length})
             </h2>
           </div>
 
@@ -94,8 +78,8 @@ const Vendor = () => {
               </thead>
 
               <tbody className="divide-y divide-gray-100">
-                {filteredVendors.length > 0 ? (
-                  filteredVendors.map((v) => (
+                {vendorList.length > 0 ? (
+                  vendorList.map((v) => (
                     <tr
                       key={v._id}
                       className={tableRowClass}
@@ -147,7 +131,7 @@ const Vendor = () => {
 
           {/* Footer */}
           <div className="p-6 text-center text-sm text-gray-400 border-t border-gray-100">
-            Showing {filteredVendors.length} of {vendorList.length} total vendors.
+            Showing {vendorList.length} total vendors.
           </div>
         </div>
       </div>
